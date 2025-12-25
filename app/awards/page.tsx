@@ -29,26 +29,35 @@ export default async function AwardsPage() {
                 key={award.id}
                 className="border-t-4 border-primary hover:shadow-xl transition-all hover:-translate-y-1"
               >
-                <CardContent className="p-6">
-                  <div className="flex flex-col items-center text-center">
-                    <div className="w-full h-48 bg-muted rounded-lg mb-4 flex items-center justify-center">
+                <CardContent className="p-0">
+                  {/* Award Image */}
+                  <div className="relative w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100">
+                    {award.image ? (
                       <Image
-                        src={`/generic-placeholder-graphic.png?height=200&width=300&text=Award+Certificate`}
+                        src={award.image}
                         alt={award.title}
-                        width={300}
-                        height={200}
-                        className="object-cover rounded"
+                        fill
+                        className="object-contain p-4"
                       />
-                    </div>
-
-                    <Award className="h-8 w-8 text-primary mb-3" />
-
-                    <h3 className="text-lg font-bold text-foreground mb-2 text-balance">{award.title}</h3>
-                    <p className="text-sm font-medium text-primary mb-3">{award.issuer}</p>
-
-                    {award.description && (
-                      <p className="text-sm text-muted-foreground mb-4 text-pretty">{award.description}</p>
+                    ) : (
+                      <div className="flex items-center justify-center h-full">
+                        <Award className="h-20 w-20 text-gray-300" />
+                      </div>
                     )}
+                  </div>
+
+                  {/* Award Details */}
+                  <div className="p-6">
+                    <div className="flex flex-col items-center text-center">
+                      <h3 className="text-lg font-bold text-foreground mb-2 text-balance">{award.title}</h3>
+                      <p className="text-sm font-medium text-primary mb-2">{award.issuer}</p>
+                      {award.date && (
+                        <p className="text-xs text-muted-foreground mb-3">{award.date}</p>
+                      )}
+                      {award.description && (
+                        <p className="text-sm text-muted-foreground mb-4 text-pretty">{award.description}</p>
+                      )}
+                    </div>
                   </div>
                 </CardContent>
               </Card>

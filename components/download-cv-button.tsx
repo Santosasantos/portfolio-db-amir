@@ -7,13 +7,12 @@ export function DownloadCVButton() {
   const handleDownloadCV = () => {
     const link = document.createElement("a")
     link.href = "/MD_AMIR_HOSSEN_CV.pdf"
-    link.download = "MD_AMIR_HOSSEN_CV.pdf"
-    link.target = "_blank"
+    // link.download = "MD_AMIR_HOSSEN_CV.pdf"
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
     window.open("/MD_AMIR_HOSSEN_CV.pdf", "_blank")
-  }
+  }; 
 
   return (
     <Button

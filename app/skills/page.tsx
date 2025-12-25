@@ -3,7 +3,9 @@ import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/page-hero"
 import { Card, CardContent } from "@/components/ui/card"
-import { Users, Laptop, Languages, Award } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { Users, Laptop, Languages, Award, ExternalLink } from "lucide-react"
+import Image from "next/image"
 
 const categoryIcons = {
   Interpersonal: Users,
@@ -21,6 +23,8 @@ export default async function SkillsPage() {
     .select("*")
     .order("display_order", { ascending: true })
 
+  type Skill = NonNullable<typeof skills>[number]
+  
   const groupedSkills = skills?.reduce(
     (acc, skill) => {
       if (!acc[skill.category]) {
@@ -29,7 +33,7 @@ export default async function SkillsPage() {
       acc[skill.category].push(skill)
       return acc
     },
-    {} as Record<string, typeof skills>,
+    {} as Record<string, Skill[]>,
   )
 
   return (
@@ -55,7 +59,7 @@ export default async function SkillsPage() {
                     {category}
                   </h2>
                   <div className="grid md:grid-cols-4 gap-4">
-                    {categorySkills.map((skill) => (
+                    {(categorySkills as Skill[]).map((skill) => (
                       <Card
                         key={skill.id}
                         className="border-l-4 border-primary hover:shadow-lg transition-all hover:-translate-y-1"
@@ -80,26 +84,52 @@ export default async function SkillsPage() {
                   <Award className="h-6 w-6" />
                   Certifications & Courses
                 </h2>
-                <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {certifications.map((cert) => (
-                    <Card key={cert.id} className="border-l-4 border-primary hover:shadow-lg transition-shadow">
-                      <CardContent className="p-6">
-                        <div className="flex justify-between items-start">
+                    <Card key={cert.id} className="border border-gray-200 hover:shadow-lg transition-all hover:-translate-y-1 overflow-hidden">
+                      <CardContent className="p-0">
+                        {/* Certificate Image - Enhanced for Better Visibility */}
+                        <div className="relative w-full h-64 bg-gradient-to-br from-gray-50 via-white to-gray-50 border-b border-gray-200">
+                          {cert.image ? (
+                            <div className="relative w-full h-full p-6">
+                              <Image
+                                src={cert.image}
+                                alt={cert.name}
+                                fill
+                                className="object-contain drop-shadow-lg"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                              />
+                            </div>
+                          ) : (
+                            <div className="flex items-center justify-center h-full text-muted-foreground">
+                              <Award className="h-20 w-20 opacity-20" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Certificate Details */}
+                        <div className="p-6 space-y-3">
                           <div>
                             <h3 className="text-lg font-bold text-foreground mb-1">{cert.name}</h3>
-                            <p className="text-sm text-muted-foreground">
-                              {cert.issuer} • {cert.issue_date}
-                            </p>
+                            <p className="text-sm text-muted-foreground font-medium">{cert.issuer}</p>
+                            <p className="text-sm text-muted-foreground mt-1">{cert.issue_date}</p>
                           </div>
+                          
                           {cert.credential_url && (
-                            <a
-                              href={cert.credential_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-primary hover:text-primary-dark text-sm font-medium"
+                            <Button
+                              asChild
+                              variant="outline"
+                              className="w-full border-primary-light text-primary hover:bg-primary-light"
                             >
-                              View Credential →
-                            </a>
+                              <a
+                                href={cert.credential_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <ExternalLink className="h-4 w-4 mr-2" />
+                                Check the Certificate
+                              </a>
+                            </Button>
                           )}
                         </div>
                       </CardContent>

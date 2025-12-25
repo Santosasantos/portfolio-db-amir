@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
+import Image from "next/image"
 
 interface AwardFormProps {
   award?: any
@@ -20,7 +21,9 @@ interface AwardFormProps {
 export function AwardForm({ award }: AwardFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState(award?.image || "")
   const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -39,6 +42,7 @@ export function AwardForm({ award }: AwardFormProps) {
       date: formData.get("date") as string,
       description: formData.get("description") as string,
       certificate_url: formData.get("certificate_url") as string,
+      image: imagePreview,
     }
 
     try {
@@ -64,6 +68,45 @@ export function AwardForm({ award }: AwardFormProps) {
       setError(err.message)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError(null)
+
+    const supabase = createClient()
+
+    try {
+      const fileExt = file.name.split(".").pop()
+      const fileName = `award-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const { error: uploadError } = await supabase.storage.from("award-images").upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("award-images").getPublicUrl(filePath)
+
+      setImagePreview(publicUrl)
+      toast({
+        title: "Success!",
+        description: "Award image uploaded successfully.",
+      })
+    } catch (err: any) {
+      setError(err.message)
+      toast({
+        title: "Error",
+        description: "Failed to upload image. " + err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -140,6 +183,31 @@ export function AwardForm({ award }: AwardFormProps) {
               defaultValue={award?.certificate_url}
               placeholder="https://..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Award Image</Label>
+            <Input
+              id="image"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={uploading}
+            />
+            {imagePreview && (
+              <div className="mt-4 relative w-full h-64 border rounded-lg overflow-hidden bg-gray-50">
+                <Image
+                  src={imagePreview}
+                  alt="Award preview"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Upload an image of your award or certificate. This will be displayed on the awards page.
+            </p>
           </div>
 
           <div className="flex gap-3">

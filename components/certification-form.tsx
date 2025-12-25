@@ -11,6 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
+import Image from "next/image"
 
 interface CertificationFormProps {
   certification?: any
@@ -19,8 +20,49 @@ interface CertificationFormProps {
 export function CertificationForm({ certification }: CertificationFormProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
+  const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [imagePreview, setImagePreview] = useState(certification?.image || "")
   const { toast } = useToast()
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setUploading(true)
+    setError(null)
+
+    const supabase = createClient()
+
+    try {
+      const fileExt = file.name.split(".").pop()
+      const fileName = `certificate-${Math.random().toString(36).substring(7)}.${fileExt}`
+      const filePath = `${fileName}`
+
+      const { error: uploadError } = await supabase.storage.from("certificate-images").upload(filePath, file)
+
+      if (uploadError) throw uploadError
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("certificate-images").getPublicUrl(filePath)
+
+      setImagePreview(publicUrl)
+      toast({
+        title: "Success!",
+        description: "Certificate image uploaded successfully.",
+      })
+    } catch (err: any) {
+      setError(err.message)
+      toast({
+        title: "Error",
+        description: "Failed to upload image. " + err.message,
+        variant: "destructive",
+      })
+    } finally {
+      setUploading(false)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -37,6 +79,7 @@ export function CertificationForm({ certification }: CertificationFormProps) {
       issuer: formData.get("issuer") as string,
       issue_date: formData.get("issue_date") as string,
       credential_url: formData.get("credential_url") as string,
+      image: imagePreview,
     }
 
     try {
@@ -145,6 +188,31 @@ export function CertificationForm({ certification }: CertificationFormProps) {
               defaultValue={certification?.credential_url}
               placeholder="https://..."
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="image">Certificate Image</Label>
+            <Input
+              id="image"
+              name="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageUpload}
+              disabled={uploading}
+            />
+            {imagePreview && (
+              <div className="mt-4 relative w-full h-48 border rounded-lg overflow-hidden">
+                <Image
+                  src={imagePreview}
+                  alt="Certificate preview"
+                  fill
+                  className="object-contain"
+                />
+              </div>
+            )}
+            <p className="text-sm text-muted-foreground">
+              Upload a preview image of your certificate. This will be displayed on the skills page.
+            </p>
           </div>
 
           <div className="flex gap-3">

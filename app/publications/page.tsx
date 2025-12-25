@@ -4,11 +4,14 @@ import { Footer } from "@/components/footer"
 import { PageHero } from "@/components/page-hero"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { BookOpen, Calendar, ExternalLink, Users } from "lucide-react"
+import { BookOpen, Calendar, ExternalLink, Users, FileText, Quote } from "lucide-react"
+import { ConferencePublicationCard } from "@/components/conference-publication-card"
+import { LinkPreview } from "@/components/link-preview"
 
 export default async function PublicationsPage() {
   const supabase = await createClient()
 
+  const { data: profile } = await supabase.from("profiles").select("*").single()
   const { data: publications } = await supabase
     .from("publications")
     .select("*")
@@ -17,6 +20,7 @@ export default async function PublicationsPage() {
   const academicPublications = publications?.filter((pub) => pub.category === "Academic Publication") || []
   const nonAcademicPublications = publications?.filter((pub) => pub.category === "Non-Academic Publication") || []
   const workInProgress = publications?.filter((pub) => pub.category === "Work in Progress") || []
+  const conferencePublications = publications?.filter((pub) => pub.category === "Conference Publication") || []
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -84,15 +88,25 @@ export default async function PublicationsPage() {
                         </div>
                       )}
 
-                      {pub.url && (
+                      {pub.citation_count !== null && pub.citation_count !== undefined && (
+                        <div className="mb-4 flex items-center gap-2">
+                          <Quote className="h-4 w-4 text-primary" />
+                          <span className="text-sm font-semibold text-foreground">
+                            Citations: <span className="text-primary">{pub.citation_count}</span>
+                          </span>
+                        </div>
+                      )}
+
+                      {pub.academic_pdf && (
                         <Button
                           asChild
                           variant="outline"
                           size="sm"
                           className="border-primary text-primary bg-transparent"
                         >
-                          <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                            Read the Paper <ExternalLink className="ml-2 h-4 w-4" />
+                          <a href={pub.academic_pdf} target="_blank" rel="noopener noreferrer">
+                            <FileText className="mr-2 h-4 w-4" />
+                            View PDF <ExternalLink className="ml-2 h-4 w-4" />
                           </a>
                         </Button>
                       )}
@@ -113,8 +127,8 @@ export default async function PublicationsPage() {
                   {nonAcademicPublications.map((pub) => (
                     <Card key={pub.id} className="border-l-4 border-primary hover:shadow-lg transition-shadow">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-foreground mb-2">{pub.title}</h3>
-                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-3">
+                        <h3 className="text-lg font-bold text-foreground mb-3">{pub.title}</h3>
+                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
                           {pub.journal && <span className="font-medium">{pub.journal}</span>}
                           {pub.publication_date && (
                             <span className="flex items-center gap-1">
@@ -124,19 +138,27 @@ export default async function PublicationsPage() {
                           )}
                         </div>
                         {pub.url && (
-                          <Button
-                            asChild
-                            variant="outline"
-                            size="sm"
-                            className="border-primary text-primary bg-transparent"
-                          >
-                            <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                              Read Article <ExternalLink className="ml-2 h-4 w-4" />
-                            </a>
-                          </Button>
+                          <div className="mt-4">
+                            <LinkPreview url={pub.url} title={pub.title} profileImage={profile?.profile_image} />
+                          </div>
                         )}
                       </CardContent>
                     </Card>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* Conference Publications */}
+            {conferencePublications.length > 0 && (
+              <section>
+                <h2 className="text-2xl font-bold text-primary mb-6 flex items-center gap-2">
+                  <BookOpen className="h-6 w-6" />
+                  Conference Publications
+                </h2>
+                <div className="space-y-6">
+                  {conferencePublications.map((pub) => (
+                    <ConferencePublicationCard key={pub.id} publication={pub} />
                   ))}
                 </div>
               </section>
@@ -149,12 +171,54 @@ export default async function PublicationsPage() {
                   <BookOpen className="h-6 w-6" />
                   Work in Progress
                 </h2>
-                <div className="space-y-4">
+                <div className="space-y-6">
                   {workInProgress.map((pub) => (
                     <Card key={pub.id} className="border-l-4 border-yellow-500 hover:shadow-lg transition-shadow">
                       <CardContent className="p-6">
-                        <h3 className="text-lg font-bold text-foreground mb-2">{pub.title}</h3>
-                        {pub.description && <p className="text-sm text-muted-foreground">{pub.description}</p>}
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                          <h3 className="text-lg font-bold text-foreground flex-1">{pub.title}</h3>
+                          {pub.status && (
+                            <span
+                              className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap self-start ${
+                                pub.status === "Under Review"
+                                  ? "bg-blue-100 text-blue-800"
+                                  : pub.status === "Revision Phase"
+                                  ? "bg-purple-100 text-purple-800"
+                                  : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {pub.status}
+                            </span>
+                          )}
+                        </div>
+
+                        {pub.authors && (
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-3">
+                            <Users className="h-4 w-4 flex-shrink-0 text-primary" />
+                            <span>{pub.authors}</span>
+                          </div>
+                        )}
+
+                        {pub.abstract && (
+                          <div className="mb-4">
+                            <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-line">
+                              {pub.abstract}
+                            </p>
+                          </div>
+                        )}
+
+                        {pub.keywords && pub.keywords.length > 0 && (
+                          <div className="pt-4 border-t border-border">
+                            <p className="text-xs font-semibold text-foreground mb-2">Keywords:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {pub.keywords.map((keyword: any, idx: number) => (
+                                <span key={idx} className="text-xs bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                                  {keyword}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </CardContent>
                     </Card>
                   ))}

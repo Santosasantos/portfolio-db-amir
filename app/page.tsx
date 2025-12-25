@@ -27,9 +27,13 @@ import {
   Linkedin,
   Facebook,
   ChevronDown,
+  FileText,
+  Quote,
 } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { ConferencePublicationSummary } from "@/components/conference-publication-summary"
+import { LinkPreview } from "@/components/link-preview"
 
 const categoryIcons = {
   Interpersonal: Users,
@@ -80,6 +84,7 @@ export default async function Home() {
 
   const academicPublications = publications?.filter((pub: any) => pub.category === "Academic Publication") || []
   const nonAcademicPublications = publications?.filter((pub: any) => pub.category === "Non-Academic Publication") || []
+  const conferencePublications = publications?.filter((pub: any) => pub.category === "Conference Publication") || []
   const workInProgress = publications?.filter((pub: any) => pub.category === "Work in Progress") || []
 
   const groupedSkills = skills?.reduce(
@@ -295,8 +300,29 @@ export default async function Home() {
                 {researchExperiences.length === 0 && (
                   <p className="text-center text-muted-foreground py-12 text-lg">No research experiences available.</p>
                 )}
+                
+                {/* Research Portfolio Link */}
+                <div className="flex justify-center pt-6">
+                  <Button
+                    asChild
+                    size="lg"
+                    variant="outline"
+                    className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold"
+                  >
+                    <Link
+                      href="https://drive.google.com/drive/folders/1XmWCbws-t2uRTTOm-kd4wJozBuMv99wc?dmr=1&ec=wgc-drive-hero-goto"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <Briefcase className="mr-2 h-5 w-5" />
+                      View Research Evidence Portfolio
+                      <ExternalLink className="ml-2 h-5 w-5" />
+                    </Link>
+                  </Button>
+                </div>
+
                 {researchExperiences.length > maxItemsToShow && (
-                  <div className="flex justify-center pt-8">
+                  <div className="flex justify-center pt-4">
                     <Button asChild size="lg" className="bg-primary hover:bg-primary-dark font-semibold">
                       <Link href="/experiences">
                         View All Experiences ({researchExperiences.length}) <ExternalLink className="ml-2 h-5 w-5" />
@@ -442,96 +468,119 @@ export default async function Home() {
             </div>
 
             <Tabs defaultValue="academic" className="max-w-5xl mx-auto">
-              <TabsList className="grid w-full max-w-2xl mx-auto grid-cols-3 mb-12 h-auto p-1 bg-white shadow-sm">
+              <TabsList className="grid w-full max-w-3xl mx-auto grid-cols-4 mb-12 h-auto p-1 bg-white shadow-sm">
                 <TabsTrigger
                   value="academic"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-sm md:text-base font-semibold"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-xs md:text-sm font-semibold"
                 >
                   Academic
                 </TabsTrigger>
                 <TabsTrigger
+                  value="conference"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-xs md:text-sm font-semibold"
+                >
+                  Conference
+                </TabsTrigger>
+                <TabsTrigger
                   value="non-academic"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-sm md:text-base font-semibold"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-xs md:text-sm font-semibold"
                 >
                   Non-Academic
                 </TabsTrigger>
                 <TabsTrigger
                   value="work-in-progress"
-                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-sm md:text-base font-semibold"
+                  className="data-[state=active]:bg-primary data-[state=active]:text-white py-3 text-xs md:text-sm font-semibold"
                 >
                   In Progress
                 </TabsTrigger>
               </TabsList>
 
               <TabsContent value="academic" className="space-y-6">
-                {academicPublications.slice(0, maxItemsToShow).map((pub: any) => (
-                  <Card
-                    key={pub.id}
-                    className="border-l-4 border-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <CardContent className="p-8">
-                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
-                        <h4 className="text-xl font-bold text-foreground flex-1 leading-snug">{pub.title}</h4>
-                        <span
-                          className={`text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap self-start ${
-                            pub.status === "Published" ? "bg-primary text-white" : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {pub.status}
-                        </span>
-                      </div>
-
-                      <div className="space-y-3 text-base text-muted-foreground mb-6">
-                        <div className="flex items-start gap-3">
-                          <Users className="h-5 w-5 flex-shrink-0 mt-0.5 text-primary" />
-                          <span className="leading-relaxed">{pub.authors}</span>
+                <div className="grid gap-6">
+                  {academicPublications.slice(0, maxItemsToShow).map((pub: any) => (
+                    <Card
+                      key={pub.id}
+                      className="border-l-4 border-primary hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    >
+                      <CardContent className="p-6">
+                        <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                          <h4 className="text-xl font-bold text-foreground flex-1 leading-snug">{pub.title}</h4>
+                          {pub.status && (
+                            <span
+                              className={`text-xs font-semibold px-3 py-1 rounded-full whitespace-nowrap ${
+                                pub.status === "Published" ? "bg-primary text-white" : "bg-yellow-100 text-yellow-800"
+                              }`}
+                            >
+                              {pub.status}
+                            </span>
+                          )}
                         </div>
-                        {pub.journal && (
-                          <div className="flex items-center gap-3">
-                            <BookOpen className="h-5 w-5 flex-shrink-0 text-primary" />
-                            <span className="font-semibold text-foreground">{pub.journal}</span>
+
+                        <div className="space-y-2 text-sm text-muted-foreground mb-4">
+                          {pub.authors && (
+                            <div className="flex items-center gap-2">
+                              <Users className="h-4 w-4 flex-shrink-0 text-primary" />
+                              <span>{pub.authors}</span>
+                            </div>
+                          )}
+                          {pub.journal && (
+                            <div className="flex items-center gap-2">
+                              <BookOpen className="h-4 w-4 flex-shrink-0 text-primary" />
+                              <span className="font-medium">{pub.journal}</span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-4">
+                            {pub.publication_date && (
+                              <div className="flex items-center gap-2">
+                                <Calendar className="h-4 w-4 flex-shrink-0 text-primary" />
+                                <span>{pub.publication_date}</span>
+                              </div>
+                            )}
+                            {pub.citation_count !== null && pub.citation_count !== undefined && (
+                              <div className="flex items-center gap-2">
+                                <Quote className="h-4 w-4 flex-shrink-0 text-primary" />
+                                <span className="font-semibold">
+                                  <span className="text-primary">{pub.citation_count}</span> citations
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        {pub.abstract && (
+                          <p className="text-sm text-muted-foreground mb-4 leading-relaxed line-clamp-2">{pub.abstract}</p>
+                        )}
+
+                        {pub.keywords && pub.keywords.length > 0 && (
+                          <div className="mb-4 pt-4 border-t">
+                            <div className="flex flex-wrap gap-2">
+                              {pub.keywords.map((keyword: any, idx: number) => (
+                                <span key={idx} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                                  {keyword}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
-                        {pub.publication_date && (
-                          <div className="flex items-center gap-3">
-                            <Calendar className="h-5 w-5 flex-shrink-0 text-primary" />
-                            <span className="font-medium">{pub.publication_date}</span>
-                          </div>
+
+                        {pub.academic_pdf && (
+                          <Button
+                            asChild
+                            variant="outline"
+                            size="sm"
+                            className="border-primary text-primary hover:bg-primary hover:text-white"
+                          >
+                            <a href={pub.academic_pdf} target="_blank" rel="noopener noreferrer">
+                              <FileText className="mr-2 h-4 w-4" />
+                              View PDF
+                              <ExternalLink className="ml-2 h-4 w-4" />
+                            </a>
+                          </Button>
                         )}
-                      </div>
-
-                      {pub.abstract && (
-                        <p className="text-base text-muted-foreground mb-6 leading-relaxed">{pub.abstract}</p>
-                      )}
-
-                      {pub.keywords && pub.keywords.length > 0 && (
-                        <div className="mb-6 pt-6 border-t border-border">
-                          <p className="text-sm font-bold text-foreground mb-2">Keywords:</p>
-                          <div className="flex flex-wrap gap-2">
-                            {pub.keywords.map((keyword: any, idx: number) => (
-                              <span key={idx} className="text-xs bg-primary/10 text-primary px-3 py-1 rounded-full">
-                                {keyword}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {pub.url && (
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold bg-transparent"
-                        >
-                          <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                            Read the Paper <ExternalLink className="ml-2 h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
                 {academicPublications.length === 0 && (
                   <p className="text-center text-muted-foreground py-12 text-lg">No academic publications available.</p>
                 )}
@@ -546,38 +595,54 @@ export default async function Home() {
                 )}
               </TabsContent>
 
+              <TabsContent value="conference" className="space-y-6">
+                <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {conferencePublications.slice(0, maxItemsToShow).map((pub: any) => (
+                    <ConferencePublicationSummary key={pub.id} publication={pub} />
+                  ))}
+                </div>
+                {conferencePublications.length === 0 && (
+                  <p className="text-center text-muted-foreground py-12 text-lg">
+                    No conference publications available.
+                  </p>
+                )}
+                {conferencePublications.length > maxItemsToShow && (
+                  <div className="flex justify-center pt-8">
+                    <Button asChild size="lg" className="bg-primary hover:bg-primary-dark font-semibold">
+                      <Link href="/publications">
+                        View All Conference Publications ({conferencePublications.length}){" "}
+                        <ExternalLink className="ml-2 h-5 w-5" />
+                      </Link>
+                    </Button>
+                  </div>
+                )}
+              </TabsContent>
+
               <TabsContent value="non-academic" className="space-y-6">
-                {nonAcademicPublications.slice(0, maxItemsToShow).map((pub: any) => (
-                  <Card
-                    key={pub.id}
-                    className="border-l-4 border-primary hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
-                  >
-                    <CardContent className="p-8">
-                      <h4 className="text-xl font-bold text-foreground mb-4 leading-snug">{pub.title}</h4>
-                      <div className="flex flex-wrap gap-6 text-base text-muted-foreground mb-6">
-                        {pub.journal && <span className="font-semibold text-foreground">{pub.journal}</span>}
-                        {pub.publication_date && (
-                          <span className="flex items-center gap-2 font-medium">
-                            <Calendar className="h-5 w-5" />
-                            {pub.publication_date}
-                          </span>
+                <div className="grid gap-6">
+                  {nonAcademicPublications.slice(0, maxItemsToShow).map((pub: any) => (
+                    <Card
+                      key={pub.id}
+                      className="border-l-4 border-primary hover:shadow-lg transition-all duration-300 hover:-translate-y-1"
+                    >
+                      <CardContent className="p-6">
+                        <h4 className="text-xl font-bold text-foreground mb-4 leading-snug">{pub.title}</h4>
+                        <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
+                          {pub.journal && <span className="font-medium">{pub.journal}</span>}
+                          {pub.publication_date && (
+                            <span className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4" />
+                              {pub.publication_date}
+                            </span>
+                          )}
+                        </div>
+                        {pub.url && (
+                          <LinkPreview url={pub.url} title={pub.title} profileImage={profile?.profile_image} />
                         )}
-                      </div>
-                      {pub.url && (
-                        <Button
-                          asChild
-                          variant="outline"
-                          size="sm"
-                          className="border-2 border-primary text-primary hover:bg-primary hover:text-white font-semibold bg-transparent"
-                        >
-                          <a href={pub.url} target="_blank" rel="noopener noreferrer">
-                            Read Article <ExternalLink className="ml-2 h-4 w-4" />
-                          </a>
-                        </Button>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
                 {nonAcademicPublications.length === 0 && (
                   <p className="text-center text-muted-foreground py-12 text-lg">
                     No non-academic publications available.
@@ -602,9 +667,49 @@ export default async function Home() {
                     className="border-l-4 border-yellow-500 hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
                   >
                     <CardContent className="p-8">
-                      <h4 className="text-xl font-bold text-foreground mb-4 leading-snug">{pub.title}</h4>
+                      <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4 mb-4">
+                        <h4 className="text-xl font-bold text-foreground flex-1 leading-snug">{pub.title}</h4>
+                        {pub.status && (
+                          <span
+                            className={`text-xs font-semibold px-4 py-1.5 rounded-full whitespace-nowrap self-start ${
+                              pub.status === "Under Review"
+                                ? "bg-blue-100 text-blue-800"
+                                : pub.status === "Revision Phase"
+                                ? "bg-purple-100 text-purple-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {pub.status}
+                          </span>
+                        )}
+                      </div>
+
+                      {pub.authors && (
+                        <div className="flex items-center gap-2 text-base text-muted-foreground mb-4">
+                          <Users className="h-5 w-5 flex-shrink-0 text-primary" />
+                          <span>{pub.authors}</span>
+                        </div>
+                      )}
+
                       {pub.abstract && (
-                        <p className="text-base text-muted-foreground leading-relaxed">{pub.abstract}</p>
+                        <div className="mb-4">
+                          <p className="text-base text-muted-foreground leading-relaxed whitespace-pre-line">
+                            {pub.abstract}
+                          </p>
+                        </div>
+                      )}
+
+                      {pub.keywords && pub.keywords.length > 0 && (
+                        <div className="pt-4 border-t border-border">
+                          <p className="text-sm font-bold text-foreground mb-2">Keywords:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {pub.keywords.map((keyword: any, idx: number) => (
+                              <span key={idx} className="text-xs bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full">
+                                {keyword}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </CardContent>
                   </Card>
@@ -644,30 +749,37 @@ export default async function Home() {
                 {awards?.slice(0, 6).map((award: any) => (
                   <Card
                     key={award.id}
-                    className="border-t-4 border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2"
+                    className="border-t-4 border-primary hover:shadow-2xl transition-all duration-300 hover:-translate-y-2 overflow-hidden"
                   >
-                    <CardContent className="p-6">
-                      <div className="flex flex-col items-center text-center">
-                        <div className="w-full h-48 bg-muted rounded-lg mb-6 flex items-center justify-center overflow-hidden">
+                    <CardContent className="p-0">
+                      {/* Award Image */}
+                      <div className="relative w-full h-56 bg-gradient-to-br from-gray-50 to-gray-100">
+                        {award.image ? (
                           <Image
-                            src="/award-certificate.png"
+                            src={award.image}
                             alt={award.title}
-                            width={300}
-                            height={200}
-                            className="object-cover rounded"
+                            fill
+                            className="object-contain p-4"
                           />
-                        </div>
-
-                        <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                          <Award className="h-7 w-7 text-primary" />
-                        </div>
-
-                        <h3 className="text-lg font-bold text-foreground mb-3 leading-snug">{award.title}</h3>
-                        <p className="text-base font-semibold text-primary mb-4">{award.issuer}</p>
-
-                        {award.description && (
-                          <p className="text-sm text-muted-foreground leading-relaxed">{award.description}</p>
+                        ) : (
+                          <div className="flex items-center justify-center h-full">
+                            <Award className="h-20 w-20 text-gray-300" />
+                          </div>
                         )}
+                      </div>
+
+                      {/* Award Details */}
+                      <div className="p-6">
+                        <div className="flex flex-col items-center text-center">
+                          <h3 className="text-lg font-bold text-foreground mb-2 leading-snug">{award.title}</h3>
+                          <p className="text-base font-semibold text-primary mb-3">{award.issuer}</p>
+                          {award.date && (
+                            <p className="text-sm text-muted-foreground mb-3">{award.date}</p>
+                          )}
+                          {award.description && (
+                            <p className="text-sm text-muted-foreground leading-relaxed">{award.description}</p>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
