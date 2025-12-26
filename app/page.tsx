@@ -1,5 +1,5 @@
 // Remove "use client" directive - this is now a Server Component
-import { createClient } from "@/lib/supabase/client"
+import { createClient } from "@/lib/supabase/server"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
@@ -54,6 +54,10 @@ const languageFlags: Record<string, string> = {
   Chinese: "🇨🇳",
   Japanese: "🇯🇵",
 }
+
+// Force dynamic rendering to prevent caching in production
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
 export default async function Home() {
   const supabase = await createClient()

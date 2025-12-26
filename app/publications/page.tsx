@@ -8,6 +8,10 @@ import { BookOpen, Calendar, ExternalLink, Users, FileText, Quote } from "lucide
 import { ConferencePublicationCard } from "@/components/conference-publication-card"
 import { LinkPreview } from "@/components/link-preview"
 
+// Force dynamic rendering to prevent caching in production
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function PublicationsPage() {
   const supabase = await createClient()
 

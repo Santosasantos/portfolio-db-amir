@@ -337,6 +337,17 @@ export function PublicationForm({ publication }: PublicationFormProps) {
         })
       }
 
+      // Revalidate pages to show updated data
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paths: ["/", "/publications"] }),
+        })
+      } catch (revalidateError) {
+        console.error("Revalidation error:", revalidateError)
+      }
+
       router.push("/admin/publications")
       router.refresh()
     } catch (err: any) {
@@ -362,6 +373,17 @@ export function PublicationForm({ publication }: PublicationFormProps) {
         title: "Success!",
         description: "Publication deleted successfully.",
       })
+
+      // Revalidate pages to show updated data immediately
+      try {
+        await fetch("/api/revalidate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ paths: ["/", "/publications"] }),
+        })
+      } catch (revalidateError) {
+        console.error("Revalidation error:", revalidateError)
+      }
 
       router.push("/admin/publications")
       router.refresh()

@@ -26,15 +26,36 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser()
 
-  // Protect admin routes
-  if (request.nextUrl.pathname.startsWith("/admin") && !user) {
-    const url = request.nextUrl.clone()
-    url.pathname = "/auth/login"
-    return NextResponse.redirect(url)
+    // Handle refresh token errors gracefully (invalid/expired tokens)
+    // These are expected when users aren't logged in or sessions expired
+    const isRefreshTokenError =
+      error && ((error as any).code === "refresh_token_not_found" || error.message?.includes("Refresh Token"))
+
+    // Protect admin routes only if user check was successful and not a refresh token error
+    if (!isRefreshTokenError && request.nextUrl.pathname.startsWith("/admin") && !user) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/auth/login"
+      return NextResponse.redirect(url)
+    }
+  } catch (error: unknown) {
+    // Silently handle refresh token errors - they're expected for unauthenticated users
+    const isRefreshTokenError =
+      error &&
+      typeof error === "object" &&
+      ((error as any).code === "refresh_token_not_found" ||
+        (error as Error)?.message?.includes("Refresh Token") ||
+        (error as any).__isAuthError)
+
+    // Only log unexpected errors
+    if (!isRefreshTokenError) {
+      console.error("Unexpected auth error:", error)
+    }
   }
 
   return supabaseResponse
